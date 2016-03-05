@@ -94,14 +94,25 @@ NSString *const ATLMAtlasUserNameKey = @"name";
     NSParameterAssert(nonce);
     NSParameterAssert(completion);
     
-    NSString *appUUID = [[self.layerClient.appID pathComponents] lastObject];
-    NSString *urlString = [NSString stringWithFormat:@"apps/%@/atlas_identities", appUUID];
-    NSURL *URL = [NSURL URLWithString:urlString relativeToURL:self.baseURL];
-    NSDictionary *parameters = @{ @"name": name, @"nonce" : nonce };
-    NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:URL];
+//    NSString *appUUID = [[self.layerClient.appID pathComponents] lastObject];
+//    NSString *urlString = [NSString stringWithFormat:@"apps/%@/atlas_identities", appUUID];
+//    NSURL *URL = [NSURL URLWithString:urlString relativeToURL:self.baseURL];
+//    NSDictionary *parameters = @{ @"name": name, @"nonce" : nonce };
+//    NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:URL];
+//    request.HTTPMethod = @"POST";
+//    request.HTTPBody = [NSJSONSerialization dataWithJSONObject:parameters options:0 error:nil];
+//    [request setValue:@"application/json" forHTTPHeaderField:@"Content-Type"];
+
+    NSURL *identityTokenURL = [NSURL URLWithString:@"https://layer-identity-provider.herokuapp.com/identity_tokens"];
+    NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:identityTokenURL];
     request.HTTPMethod = @"POST";
-    request.HTTPBody = [NSJSONSerialization dataWithJSONObject:parameters options:0 error:nil];
     [request setValue:@"application/json" forHTTPHeaderField:@"Content-Type"];
+    [request setValue:@"application/json" forHTTPHeaderField:@"Accept"];
+    
+    NSString *appUUID = [[self.layerClient.appID pathComponents] lastObject];
+    NSDictionary *parameters = @{ @"app_id": appUUID, @"user_id": name, @"nonce": nonce };
+    NSData *requestBody = [NSJSONSerialization dataWithJSONObject:parameters options:0 error:nil];
+    request.HTTPBody = requestBody;
     
     [[self.URLSession dataTaskWithRequest:request completionHandler:^(NSData *data, NSURLResponse *response, NSError *error) {
         if (!response && error) {
